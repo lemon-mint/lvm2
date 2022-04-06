@@ -1,6 +1,6 @@
 package lvm2
 
-type InstructionType uint16
+type InstructionType byte
 
 const WORD_SIZE = 8
 
@@ -36,4 +36,9 @@ const (
 	InstructionType_LOAD
 	InstructionType_STORE
 	InstructionType_MOV
+
+	InstructionType_CALL
+	InstructionType_RET
+
+	InstructionType_SYSCALL
 )
