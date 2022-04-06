@@ -30,7 +30,10 @@ const (
 	InstructionType_JGE
 	InstructionType_JLE
 
-	InstructionType_MOV
 	InstructionType_PUSH
 	InstructionType_POP
+
+	InstructionType_LOAD
+	InstructionType_STORE
+	InstructionType_MOV
 )
