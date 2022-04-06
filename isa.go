@@ -17,4 +17,16 @@ const (
 
 	InstructionType_SHL
 	InstructionType_SHR
+
+	InstructionType_CMP
+	InstructionType_JMP
+
+	InstructionType_JG
+	InstructionType_JL
+	InstructionType_JE
+	InstructionType_JNE
+	InstructionType_JGE
+	InstructionType_JLE
+
+	InstructionType_MOV
 )
