@@ -2,6 +2,8 @@ package lvm2
 
 type InstructionType uint16
 
+const WORD_SIZE = 8
+
 const (
 	InstructionType_NOP InstructionType = iota
 
@@ -29,4 +31,6 @@ const (
 	InstructionType_JLE
 
 	InstructionType_MOV
+	InstructionType_PUSH
+	InstructionType_POP
 )
