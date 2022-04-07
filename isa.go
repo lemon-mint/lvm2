@@ -7,38 +7,38 @@ const WORD_SIZE = 8
 const (
 	InstructionType_NOP InstructionType = iota
 
-	InstructionType_ADD
-	InstructionType_SUB
-	InstructionType_MUL
-	InstructionType_DIV
+	InstructionType_ADD // R0 = R1 + R2
+	InstructionType_SUB // R0 = R1 - R2
+	InstructionType_MUL // R0 = R1 * R2
+	InstructionType_DIV // R0 = R1 / R2
 
-	InstructionType_AND
-	InstructionType_OR
-	InstructionType_XOR
-	InstructionType_NOT
+	InstructionType_AND // R0 = R1 & R2
+	InstructionType_OR  // R0 = R1 | R2
+	InstructionType_XOR // R0 = R1 ^ R2
+	InstructionType_NOT // R0 = ~R1
 
-	InstructionType_SHL
-	InstructionType_SHR
+	InstructionType_SHL // R0 = R1 << R2
+	InstructionType_SHR // R0 = R1 >> R2
 
-	InstructionType_CMP
-	InstructionType_JMP
+	InstructionType_CMP // R0 = R1 - R2
+	InstructionType_JMP // PC = R0
 
-	InstructionType_JG
-	InstructionType_JL
-	InstructionType_JE
-	InstructionType_JNE
-	InstructionType_JGE
-	InstructionType_JLE
+	InstructionType_JG  // if R0 > 0; PC = R1
+	InstructionType_JL  // if R0 < 0; PC = R1
+	InstructionType_JE  // if R0 == 0; PC = R1
+	InstructionType_JNE // if R0 != 0; PC = R1
+	InstructionType_JGE // if R0 >= 0; PC = R1
+	InstructionType_JLE // if R0 <= 0; PC = R1
 
-	InstructionType_PUSH
-	InstructionType_POP
+	InstructionType_PUSH // SP = SP - WORD_SIZE
+	InstructionType_POP  // SP = SP + WORD_SIZE
 
-	InstructionType_LOAD
-	InstructionType_STORE
-	InstructionType_MOV
+	InstructionType_LOAD  // R0 = [MEM[R1 + R2]]
+	InstructionType_STORE // [MEM[R1 + R2]] = R0
+	InstructionType_MOV   // R0 = R1
 
-	InstructionType_CALL
-	InstructionType_RET
+	InstructionType_CALL // SP = SP - WORD_SIZE; [SP] = PC; PC = R0
+	InstructionType_RET  // PC = [SP]; SP = SP + WORD_SIZE
 
-	InstructionType_SYSCALL
+	InstructionType_SYSCALL // R0 = syscall(R1, R2)
 )
