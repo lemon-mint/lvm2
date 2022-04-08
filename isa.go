@@ -2,7 +2,7 @@ package lvm2
 
 type InstructionType byte
 
-const WORD_SIZE = 4
+const WORD_SIZE = 8
 const HALF_WORD_SIZE = WORD_SIZE / 2
 const BYTE_SIZE = 1
 
