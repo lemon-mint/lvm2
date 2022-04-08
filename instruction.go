@@ -52,3 +52,75 @@ const (
 
 	InstructionType_SYSCALL // R0 = syscall(R1, R2)
 )
+
+func (v InstructionType) String() string {
+	switch v {
+	case InstructionType_NOP:
+		return "NOP"
+	case InstructionType_ADD:
+		return "ADD"
+	case InstructionType_SUB:
+		return "SUB"
+	case InstructionType_MUL:
+		return "MUL"
+	case InstructionType_DIV:
+		return "DIV"
+	case InstructionType_AND:
+		return "AND"
+	case InstructionType_OR:
+		return "OR"
+	case InstructionType_XOR:
+		return "XOR"
+	case InstructionType_NOT:
+		return "NOT"
+	case InstructionType_SHL:
+		return "SHL"
+	case InstructionType_SHR:
+		return "SHR"
+	case InstructionType_CMP:
+		return "CMP"
+	case InstructionType_JMP:
+		return "JMP"
+	case InstructionType_JG:
+		return "JG"
+	case InstructionType_JL:
+		return "JL"
+	case InstructionType_JE:
+		return "JE"
+	case InstructionType_JNE:
+		return "JNE"
+	case InstructionType_JGE:
+		return "JGE"
+	case InstructionType_JLE:
+		return "JLE"
+	case InstructionType_LOAD:
+		return "LOAD"
+	case InstructionType_LOADH:
+		return "LOADH"
+	case InstructionType_LOADB:
+		return "LOADB"
+	case InstructionType_STORE:
+		return "STORE"
+	case InstructionType_STOREH:
+		return "STOREH"
+	case InstructionType_STOREB:
+		return "STOREB"
+	case InstructionType_MOV:
+		return "MOV"
+	case InstructionType_MOVH:
+		return "MOVH"
+	case InstructionType_MOVB:
+		return "MOVB"
+	case InstructionType_PUSH:
+		return "PUSH"
+	case InstructionType_POP:
+		return "POP"
+	case InstructionType_CALL:
+		return "CALL"
+	case InstructionType_RET:
+		return "RET"
+	case InstructionType_SYSCALL:
+		return "SYSCALL"
+	}
+	return "UNKNOWN"
+}
