@@ -95,16 +95,28 @@ func (m *Memory) Free(start uint64, size uint64) error {
 	return nil
 }
 
-func (m *Memory) LoadBlocks(address uint64, size uint64) ([]MemoryBlock, error) {
+const ErrSegmentationFault = StringError("Segmentation Fault")
+
+func (m *Memory) LoadBlock(address uint64) (MemoryBlock, error) {
 	// Check if we have a cache
-	if m.Cache != nil && m.Cache.Start <= address && m.Cache.End >= address+size {
-		return []MemoryBlock{*m.Cache}, nil
+	if m.Cache != nil && m.Cache.Start <= address && m.Cache.End >= address {
+		return *m.Cache, nil
 	}
 
-	// TODO: Check if we have a address in the stack
-	// TODO: Check if we have a address in the program
-	// TODO: Check if we have a address in the heap
-	return nil, nil
+	// Check if address is in stack
+	if address >= m.Stack.Start && address < m.Stack.End {
+		return m.Stack, nil
+	}
+
+	// Check if address is in memory
+	for i := range m.Blocks {
+		if m.Blocks[i].Start <= address && m.Blocks[i].End >= address {
+			m.Cache = &m.Blocks[i]
+			return m.Blocks[i], nil
+		}
+	}
+
+	return MemoryBlock{}, ErrSegmentationFault
 }
 
 func (m *Memory) SetProgram(p []byte) {
