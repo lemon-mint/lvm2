@@ -73,3 +73,16 @@ func (v *VM) SetProgram(p []byte) {
 func (v *VM) SetProgramCounter(pc uint64) {
 	v.Registers[64] = pc
 }
+
+func (v *VM) parseOpcode() (instructionType uint8, op0Type uint8, op1Type uint8, op2Type uint8, op0Value uint64, op1Value uint64, op2Value uint64, err error) {
+	var buffer [1 + 1 + 8*3]byte
+	_ = buffer
+	//TODO: Implement
+
+	return 0, 0, 0, 0, 0, 0, 0, nil
+}
+
+func (v *VM) Run() (uint64, error) {
+
+	return 0, nil
+}
