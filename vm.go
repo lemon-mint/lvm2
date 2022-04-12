@@ -64,3 +64,12 @@ Opcode Format:
 |                                               |
 |-----|-----|-----|-----|-----|-----|-----|-----|
 */
+
+func (v *VM) SetProgram(p []byte) {
+	v.Memory.Reset()
+	v.Memory.SetProgram(p)
+}
+
+func (v *VM) SetProgramCounter(pc uint64) {
+	v.Registers[64] = pc
+}

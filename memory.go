@@ -106,3 +106,24 @@ func (m *Memory) LoadBlocks(address uint64, size uint64) ([]MemoryBlock, error) 
 	// TODO: Check if we have a address in the heap
 	return nil, nil
 }
+
+func (m *Memory) SetProgram(p []byte) {
+	m.MemoryHead = uint64(len(p))
+	m.Blocks = append(m.Blocks, MemoryBlock{
+		Start: 0,
+		End:   uint64(len(p)),
+		Block: p,
+	})
+}
+
+func (m *Memory) Reset() {
+	for i := range m.Blocks {
+		m.Blocks[i] = MemoryBlock{}
+	}
+	m.Blocks = m.Blocks[:0]
+	m.Cache = nil
+	m.MemoryHead = 0
+	for i := range m.Stack.Block {
+		m.Stack.Block[i] = 0
+	}
+}
