@@ -86,7 +86,7 @@ func (v *VM) SetProgramCounter(pc uint64) {
 	v.Registers[64] = pc
 }
 
-func (v *VM) parseOpcode() (instructionType uint8, op0Type uint8, op1Type uint8, op2Type uint8, op0Value uint64, op1Value uint64, op2Value uint64, err error) {
+func (v *VM) parseOpcode() (instructionType uint8, op0Type OpType, op1Type OpType, op2Type OpType, op0Value uint64, op1Value uint64, op2Value uint64, err error) {
 	var buffer [1 + 1 + 8*3]byte
 	_, err = v.Memory.ReadAt(v.Registers[64], buffer[:])
 	if err != nil {
@@ -96,9 +96,9 @@ func (v *VM) parseOpcode() (instructionType uint8, op0Type uint8, op1Type uint8,
 	vs := InstructionOpcode(buffer[:])
 	instructionType = vs.InstructionType()
 	typeinfo := vs.OperandType()
-	op0Type = (typeinfo & 0b11000000) >> 6
-	op1Type = (typeinfo & 0b00110000) >> 4
-	op2Type = (typeinfo & 0b00001100) >> 2
+	op0Type = OpType((typeinfo & 0b11000000) >> 6)
+	op1Type = OpType((typeinfo & 0b00110000) >> 4)
+	op2Type = OpType((typeinfo & 0b00001100) >> 2)
 	op0Value = vs.Operand0()
 	op1Value = vs.Operand1()
 	op2Value = vs.Operand2()
