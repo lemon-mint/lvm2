@@ -1,0 +1,7 @@
+struct InstructionOpcode {
+    uint8 InstructionType;
+    uint8 OperandType;
+    uint64 Operand0;
+    uint64 Operand1;
+    uint64 Operand2;
+}

@@ -76,13 +76,28 @@ func (v *VM) SetProgramCounter(pc uint64) {
 
 func (v *VM) parseOpcode() (instructionType uint8, op0Type uint8, op1Type uint8, op2Type uint8, op0Value uint64, op1Value uint64, op2Value uint64, err error) {
 	var buffer [1 + 1 + 8*3]byte
-	_ = buffer
-	//TODO: Implement
+	_, err = v.Memory.ReadAt(v.Registers[64], buffer[:])
+	if err != nil {
+		return
+	}
 
-	return 0, 0, 0, 0, 0, 0, 0, nil
+	vs := InstructionOpcode(buffer[:])
+	instructionType = vs.InstructionType()
+	typeinfo := vs.OperandType()
+	op0Type = (typeinfo & 0b11000000) >> 6
+	op1Type = (typeinfo & 0b00110000) >> 4
+	op2Type = (typeinfo & 0b00001100) >> 2
+	op0Value = vs.Operand0()
+	op1Value = vs.Operand1()
+	op2Value = vs.Operand2()
+
+	return
 }
 
 func (v *VM) Run() (uint64, error) {
+	for {
+		break
+	}
 
 	return 0, nil
 }
