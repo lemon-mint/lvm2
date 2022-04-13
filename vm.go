@@ -22,8 +22,9 @@ type VM struct {
 }
 
 /*
-Opcode Format:
+Bytecode Format:
 
+|-----|-----|-----|-----|-----|-----|-----|-----|
 | 0   | 1   | 2   | 3   | 4   | 5   | 6   | 7   |
 |-----|-----|-----|-----|-----|-----|-----|-----|
 | Instruction Type                              |
@@ -47,7 +48,6 @@ Opcode Format:
 |                                               |
 |                                               |
 |                                               |
-|                                               |
 |-----|-----|-----|-----|-----|-----|-----|-----|
 |                                               |
 |                   Op2 Value                   |
@@ -57,9 +57,25 @@ Opcode Format:
 |                                               |
 |                                               |
 |                                               |
-|                                               |
 |-----|-----|-----|-----|-----|-----|-----|-----|
+
+Opx Type:
+
+0b00: None
+0b01: Register
+0b10: Constant
+0b11: Reserved
+
 */
+
+type OpType byte
+
+const (
+	OpTypeNone     OpType = 0b00
+	OpTypeRegister OpType = 0b01
+	OpTypeConstant OpType = 0b10
+	OpTypeReserved OpType = 0b11
+)
 
 func (v *VM) SetProgram(p []byte) {
 	v.Memory.Reset()
