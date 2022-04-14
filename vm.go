@@ -5,6 +5,13 @@ import (
 	"fmt"
 )
 
+type VMFile interface {
+	Read(p []byte) (n int, err error)
+	Write(p []byte) (n int, err error)
+	Seek(offset int64, whence int) (int64, error)
+	Close() error
+}
+
 type VM struct {
 	Memory *Memory
 
@@ -24,6 +31,9 @@ type VM struct {
 	// Stack Pointer (SP)   (Register ID: 65)
 	// Stack Base (SB)      (Register ID: 66)
 	Registers [32 + 32 + 3]uint64
+
+	// File Descriptor Table
+	Files []VMFile
 }
 
 /*
@@ -325,10 +335,10 @@ func (v *VM) Run() (uint64, error) {
 			}
 			v.Registers[64] = binary.LittleEndian.Uint64(buffer[:])
 
+		case InstructionType_SYSCALL:
+			// SYSCALL
 		default:
 			return 0, ErrInvalidInstruction
 		}
 	}
-
-	return 0, nil
 }
