@@ -13,6 +13,7 @@ const (
 	InstructionType_SUB // R0 = R1 - R2
 	InstructionType_MUL // R0 = R1 * R2
 	InstructionType_DIV // R0 = R1 / R2
+	InstructionType_MOD // R0 = R1 % R2
 
 	InstructionType_AND // R0 = R1 & R2
 	InstructionType_OR  // R0 = R1 | R2
@@ -22,7 +23,7 @@ const (
 	InstructionType_SHL // R0 = R1 << R2
 	InstructionType_SHR // R0 = R1 >> R2
 
-	InstructionType_CMP // R0 = R1 - R2
+	InstructionType_CMP // R0 = R1 - R2 (signed)
 	InstructionType_JMP // PC = R0
 
 	InstructionType_JG  // if R0 > 0; PC = R1

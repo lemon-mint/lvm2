@@ -136,6 +136,25 @@ func (m *Memory) ReadAt(address uint64, p []byte) (int, error) {
 		}
 	}
 }
+
+func (m *Memory) WriteAt(address uint64, p []byte) (int, error) {
+	for {
+		block, err := m.LoadBlock(address)
+		if err != nil {
+			return 0, err
+		}
+
+		offset := address - block.Start
+		n := copy(block.Block[offset:], p)
+		p = p[n:]
+		address += uint64(n)
+
+		if len(p) == 0 {
+			return n, nil
+		}
+	}
+}
+
 func (m *Memory) SetProgram(p []byte) {
 	m.MemoryHead = uint64(len(p))
 	m.Blocks = append(m.Blocks, MemoryBlock{
