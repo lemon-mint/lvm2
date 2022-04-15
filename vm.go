@@ -33,7 +33,9 @@ type VM struct {
 	Registers [32 + 32 + 3]uint64
 
 	// File Descriptor Table
-	Files []VMFile
+	Files map[uint64]VMFile
+	// File Descriptor Counter
+	FileCounter uint64
 }
 
 const (
@@ -200,24 +202,24 @@ func (v *VM) Run() (uint64, error) {
 	for {
 		instructionType, op0Type, op1Type, op2Type, op0Value, op1Value, op2Value, err := v.parseOpcode()
 		if err != nil {
-			return 0, err
+			return 1, err
 		}
 
 		if op0Type == OpTypeRegister {
 			if op0Value >= uint64(len(v.Registers)) {
-				return 0, fmt.Errorf("invalid register: %d", op0Value)
+				return 1, fmt.Errorf("invalid register: %d", op0Value)
 			}
 			op0Value = v.Registers[op0Value]
 		}
 		if op1Type == OpTypeRegister {
 			if op1Value >= uint64(len(v.Registers)) {
-				return 0, fmt.Errorf("invalid register: %d", op1Value)
+				return 1, fmt.Errorf("invalid register: %d", op1Value)
 			}
 			op1Value = v.Registers[op1Value]
 		}
 		if op2Type == OpTypeRegister {
 			if op2Value >= uint64(len(v.Registers)) {
-				return 0, fmt.Errorf("invalid register: %d", op2Value)
+				return 1, fmt.Errorf("invalid register: %d", op2Value)
 			}
 			op2Value = v.Registers[op2Value]
 		}
@@ -311,7 +313,7 @@ func (v *VM) Run() (uint64, error) {
 			var buffer [8]byte
 			_, err = v.Memory.ReadAt(op1Value+op2Value, buffer[:])
 			if err != nil {
-				return 0, err
+				return 1, err
 			}
 			v.Registers[op0Value] = binary.LittleEndian.Uint64(buffer[:])
 		case InstructionType_LOADH:
@@ -319,7 +321,7 @@ func (v *VM) Run() (uint64, error) {
 			var buffer [4]byte
 			_, err = v.Memory.ReadAt(op1Value+op2Value, buffer[:])
 			if err != nil {
-				return 0, err
+				return 1, err
 			}
 			v.Registers[op0Value] = uint64(binary.LittleEndian.Uint32(buffer[:]))
 		case InstructionType_LOADB:
@@ -327,7 +329,7 @@ func (v *VM) Run() (uint64, error) {
 			var buffer [1]byte
 			_, err = v.Memory.ReadAt(op1Value+op2Value, buffer[:])
 			if err != nil {
-				return 0, err
+				return 1, err
 			}
 			v.Registers[op0Value] = uint64(buffer[0])
 
@@ -337,7 +339,7 @@ func (v *VM) Run() (uint64, error) {
 			binary.LittleEndian.PutUint64(buffer[:], op0Value)
 			_, err = v.Memory.WriteAt(op1Value+op2Value, buffer[:])
 			if err != nil {
-				return 0, err
+				return 1, err
 			}
 		case InstructionType_STOREH:
 			// STOREH
@@ -345,7 +347,7 @@ func (v *VM) Run() (uint64, error) {
 			binary.LittleEndian.PutUint32(buffer[:], uint32(op0Value))
 			_, err = v.Memory.WriteAt(op1Value+op2Value, buffer[:])
 			if err != nil {
-				return 0, err
+				return 1, err
 			}
 		case InstructionType_STOREB:
 			// STOREB
@@ -353,7 +355,7 @@ func (v *VM) Run() (uint64, error) {
 			buffer[0] = byte(op0Value)
 			_, err = v.Memory.WriteAt(op1Value+op2Value, buffer[:])
 			if err != nil {
-				return 0, err
+				return 1, err
 			}
 
 		case InstructionType_MOV:
@@ -373,7 +375,7 @@ func (v *VM) Run() (uint64, error) {
 			binary.LittleEndian.PutUint64(buffer[:], op0Value)
 			_, err = v.Memory.WriteAt(v.Registers[REGISTER_SP], buffer[:])
 			if err != nil {
-				return 0, err
+				return 1, err
 			}
 		case InstructionType_POP:
 			// POP
@@ -381,7 +383,7 @@ func (v *VM) Run() (uint64, error) {
 			_, err = v.Memory.ReadAt(v.Registers[REGISTER_SP], buffer[:])
 			v.Registers[REGISTER_SP] += 8
 			if err != nil {
-				return 0, err
+				return 1, err
 			}
 			v.Registers[op0Value] = binary.LittleEndian.Uint64(buffer[:])
 
@@ -392,7 +394,7 @@ func (v *VM) Run() (uint64, error) {
 			binary.LittleEndian.PutUint64(buffer[:], v.Registers[REGISTER_PC])
 			_, err = v.Memory.WriteAt(v.Registers[REGISTER_SP], buffer[:])
 			if err != nil {
-				return 0, err
+				return 1, err
 			}
 			v.Registers[REGISTER_PC] = op0Value
 		case InstructionType_RET:
@@ -401,14 +403,14 @@ func (v *VM) Run() (uint64, error) {
 			_, err = v.Memory.ReadAt(v.Registers[REGISTER_SP], buffer[:])
 			v.Registers[REGISTER_SP] += 8
 			if err != nil {
-				return 0, err
+				return 1, err
 			}
 			v.Registers[REGISTER_PC] = binary.LittleEndian.Uint64(buffer[:])
 
 		case InstructionType_SYSCALL:
 			// SYSCALL
 		default:
-			return 0, ErrInvalidInstruction
+			return 1, ErrInvalidInstruction
 		}
 	}
 }
