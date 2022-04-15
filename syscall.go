@@ -30,7 +30,7 @@ func _syscall_write(vm *VM, _, _, _ uint64) (errno uint64, err error) {
 	var buffer []byte = make([]byte, n)
 	_, err = vm.Memory.ReadAt(p, buffer)
 	if err != nil {
-		return 0, err
+		return 1, err
 	}
 
 	written, err := file.Write(buffer)
@@ -66,7 +66,7 @@ func _syscall_read(vm *VM, _, _, _ uint64) (errno uint64, err error) {
 
 	_, err = vm.Memory.WriteAt(p, buffer)
 	if err != nil {
-		return 0, err
+		return 1, err
 	}
 
 	vm.Registers[REGISTER_SYS35] = uint64(read)

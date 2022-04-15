@@ -409,6 +409,14 @@ func (v *VM) Run() (uint64, error) {
 
 		case InstructionType_SYSCALL:
 			// SYSCALL
+			sysfunc, ok := syscall_Function_Table[op1Value]
+			if !ok {
+				return 1, fmt.Errorf("ENOSYS")
+			}
+			errno, err := sysfunc(v, op0Value, op1Value, op2Value)
+			if err != nil {
+				return errno, err
+			}
 		default:
 			return 1, ErrInvalidInstruction
 		}
