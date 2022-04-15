@@ -36,6 +36,76 @@ type VM struct {
 	Files []VMFile
 }
 
+const (
+	REGISTER_R0    = 0
+	REGISTER_R1    = 1
+	REGISTER_R2    = 2
+	REGISTER_R3    = 3
+	REGISTER_R4    = 4
+	REGISTER_R5    = 5
+	REGISTER_R6    = 6
+	REGISTER_R7    = 7
+	REGISTER_R8    = 8
+	REGISTER_R9    = 9
+	REGISTER_R10   = 10
+	REGISTER_R11   = 11
+	REGISTER_R12   = 12
+	REGISTER_R13   = 13
+	REGISTER_R14   = 14
+	REGISTER_R15   = 15
+	REGISTER_R16   = 16
+	REGISTER_R17   = 17
+	REGISTER_R18   = 18
+	REGISTER_R19   = 19
+	REGISTER_R20   = 20
+	REGISTER_R21   = 21
+	REGISTER_R22   = 22
+	REGISTER_R23   = 23
+	REGISTER_R24   = 24
+	REGISTER_R25   = 25
+	REGISTER_R26   = 26
+	REGISTER_R27   = 27
+	REGISTER_R28   = 28
+	REGISTER_R29   = 29
+	REGISTER_R30   = 30
+	REGISTER_R31   = 31
+	REGISTER_SYS32 = 32
+	REGISTER_SYS33 = 33
+	REGISTER_SYS34 = 34
+	REGISTER_SYS35 = 35
+	REGISTER_SYS36 = 36
+	REGISTER_SYS37 = 37
+	REGISTER_SYS38 = 38
+	REGISTER_SYS39 = 39
+	REGISTER_SYS40 = 40
+	REGISTER_SYS41 = 41
+	REGISTER_SYS42 = 42
+	REGISTER_SYS43 = 43
+	REGISTER_SYS44 = 44
+	REGISTER_SYS45 = 45
+	REGISTER_SYS46 = 46
+	REGISTER_SYS47 = 47
+	REGISTER_SYS48 = 48
+	REGISTER_SYS49 = 49
+	REGISTER_SYS50 = 50
+	REGISTER_SYS51 = 51
+	REGISTER_SYS52 = 52
+	REGISTER_SYS53 = 53
+	REGISTER_SYS54 = 54
+	REGISTER_SYS55 = 55
+	REGISTER_SYS56 = 56
+	REGISTER_SYS57 = 57
+	REGISTER_SYS58 = 58
+	REGISTER_SYS59 = 59
+	REGISTER_SYS60 = 60
+	REGISTER_SYS61 = 61
+	REGISTER_SYS62 = 62
+	REGISTER_SYS63 = 63
+	REGISTER_PC    = 64
+	REGISTER_SP    = 65
+	REGISTER_SB    = 66
+)
+
 /*
 Bytecode Format:
 
@@ -100,16 +170,16 @@ func (v *VM) SetProgram(p []byte) {
 }
 
 func (v *VM) SetProgramCounter(pc uint64) {
-	v.Registers[64] = pc
+	v.Registers[REGISTER_PC] = pc
 }
 
 func (v *VM) parseOpcode() (instructionType InstructionType, op0Type OpType, op1Type OpType, op2Type OpType, op0Value uint64, op1Value uint64, op2Value uint64, err error) {
 	var buffer [instructionBytecodeSize]byte
-	_, err = v.Memory.ReadAt(v.Registers[64], buffer[:])
+	_, err = v.Memory.ReadAt(v.Registers[REGISTER_PC], buffer[:])
 	if err != nil {
 		return
 	}
-	v.Registers[64] += instructionBytecodeSize
+	v.Registers[REGISTER_PC] += instructionBytecodeSize
 
 	vs := InstructionOpcode(buffer[:])
 	instructionType = InstructionType(vs.InstructionType())
@@ -204,36 +274,36 @@ func (v *VM) Run() (uint64, error) {
 
 		case InstructionType_JMP:
 			// JMP
-			v.Registers[64] = op0Value
+			v.Registers[REGISTER_PC] = op0Value
 		case InstructionType_JG:
 			// JG
 			if int64(op0Value) > 0 {
-				v.Registers[64] = op1Value
+				v.Registers[REGISTER_PC] = op1Value
 			}
 		case InstructionType_JL:
 			// JL
 			if int64(op0Value) < 0 {
-				v.Registers[64] = op1Value
+				v.Registers[REGISTER_PC] = op1Value
 			}
 		case InstructionType_JE:
 			// JE
 			if int64(op0Value) == 0 {
-				v.Registers[64] = op1Value
+				v.Registers[REGISTER_PC] = op1Value
 			}
 		case InstructionType_JNE:
 			// JNE
 			if int64(op0Value) != 0 {
-				v.Registers[64] = op1Value
+				v.Registers[REGISTER_PC] = op1Value
 			}
 		case InstructionType_JGE:
 			// JGE
 			if int64(op0Value) >= 0 {
-				v.Registers[64] = op1Value
+				v.Registers[REGISTER_PC] = op1Value
 			}
 		case InstructionType_JLE:
 			// JLE
 			if int64(op0Value) <= 0 {
-				v.Registers[64] = op1Value
+				v.Registers[REGISTER_PC] = op1Value
 			}
 
 		case InstructionType_LOAD:
@@ -298,18 +368,18 @@ func (v *VM) Run() (uint64, error) {
 
 		case InstructionType_PUSH:
 			// PUSH
-			v.Registers[65] -= 8
+			v.Registers[REGISTER_SP] -= 8
 			var buffer [8]byte
 			binary.LittleEndian.PutUint64(buffer[:], op0Value)
-			_, err = v.Memory.WriteAt(v.Registers[65], buffer[:])
+			_, err = v.Memory.WriteAt(v.Registers[REGISTER_SP], buffer[:])
 			if err != nil {
 				return 0, err
 			}
 		case InstructionType_POP:
 			// POP
 			var buffer [8]byte
-			_, err = v.Memory.ReadAt(v.Registers[65], buffer[:])
-			v.Registers[65] += 8
+			_, err = v.Memory.ReadAt(v.Registers[REGISTER_SP], buffer[:])
+			v.Registers[REGISTER_SP] += 8
 			if err != nil {
 				return 0, err
 			}
@@ -317,23 +387,23 @@ func (v *VM) Run() (uint64, error) {
 
 		case InstructionType_CALL:
 			// CALL
-			v.Registers[65] -= 8
+			v.Registers[REGISTER_SP] -= 8
 			var buffer [8]byte
-			binary.LittleEndian.PutUint64(buffer[:], v.Registers[64])
-			_, err = v.Memory.WriteAt(v.Registers[65], buffer[:])
+			binary.LittleEndian.PutUint64(buffer[:], v.Registers[REGISTER_PC])
+			_, err = v.Memory.WriteAt(v.Registers[REGISTER_SP], buffer[:])
 			if err != nil {
 				return 0, err
 			}
-			v.Registers[64] = op0Value
+			v.Registers[REGISTER_PC] = op0Value
 		case InstructionType_RET:
 			// RET
 			var buffer [8]byte
-			_, err = v.Memory.ReadAt(v.Registers[65], buffer[:])
-			v.Registers[65] += 8
+			_, err = v.Memory.ReadAt(v.Registers[REGISTER_SP], buffer[:])
+			v.Registers[REGISTER_SP] += 8
 			if err != nil {
 				return 0, err
 			}
-			v.Registers[64] = binary.LittleEndian.Uint64(buffer[:])
+			v.Registers[REGISTER_PC] = binary.LittleEndian.Uint64(buffer[:])
 
 		case InstructionType_SYSCALL:
 			// SYSCALL
