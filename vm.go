@@ -415,6 +415,9 @@ func (v *VM) Run() (uint64, error) {
 			}
 			errno, err := sysfunc(v, op0Value, op1Value, op2Value)
 			if err != nil {
+				if err == ErrExited {
+					return errno, nil
+				}
 				return errno, err
 			}
 		default:

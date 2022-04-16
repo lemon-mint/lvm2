@@ -6,4 +6,6 @@ MOV $SYS32, 1 // FD=1 (stdout)
 MOV $SYS33, #hw // DATA=hw
 MOV $SYS34, 13 // LEN=13
 SYSCALL $R0, 1, 0 // write
-SYSCALL $R0, 60, $R0 // exit($R0)
+
+MOV $SYS32, 0 // exit code 0
+SYSCALL $R0, 60, 0 // exit
