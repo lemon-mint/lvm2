@@ -5,7 +5,7 @@ SECTION .code
 MOV $SYS32, 1 // FD=1 (stdout)
 MOV $SYS33, #hw // DATA=hw
 MOV $SYS34, 13 // LEN=13
-SYSCALL $R0, 1, 0 // write
+SYSCALL $R0, 1, 0x00 // write
 
 MOV $SYS32, 0x00 // exit code 0
-SYSCALL $R0, 60, 0 // exit
+SYSCALL $R0, 60, 0x00 // exit
