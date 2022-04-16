@@ -5,18 +5,21 @@ import "fmt"
 type TokenType string
 
 const (
-	TokenType_EOF     = "EOF"
-	TokenType_NUMBER  = "NUMBER"
-	TokenType_STRING  = "STRING"
-	TokenType_IDENT   = "IDENT"
-	TokenType_REG     = "REG"
-	TokenType_ADD     = "ADD"
-	TokenType_SUB     = "SUB"
-	TokenType_COMMA   = "COMMA"
-	TokenType_COMMENT = "COMMENT"
+	TokenType_EOF        = "EOF"
+	TokenType_NUMBER     = "NUMBER"
+	TokenType_STRING     = "STRING"
+	TokenType_IDENTIFIER = "IDENTIFIER"
+	TokenType_REGISTER   = "REGISTER"
+	TokenType_ADD        = "ADD"
+	TokenType_SUB        = "SUB"
+	TokenType_COMMA      = "COMMA"
+	TokenType_COMMENT    = "COMMENT"
 
 	TokenType_LBRACKET = "LBRACKET"
 	TokenType_RBRACKET = "RBRACKET"
+
+	TokenType_INSTRUCTION = "INSTRUCTION"
+	TokenType_COMPILER    = "COMPILER"
 )
 
 type Token struct {
@@ -200,6 +203,17 @@ var register_keywords = map[string]bool{
 	"$PC":    true,
 	"$SP":    true,
 	"$SB":    true,
+}
+
+func LookupKeyword(keyword string) TokenType {
+	if asm_keywords[keyword] {
+		return TokenType_INSTRUCTION
+	} else if compiler_keywords[keyword] {
+		return TokenType_COMPILER
+	} else if register_keywords[keyword] {
+		return TokenType_REGISTER
+	}
+	return TokenType_IDENTIFIER
 }
 
 func NewLexer(data []rune) (*Lexer, error) {
