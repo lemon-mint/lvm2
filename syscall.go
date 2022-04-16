@@ -5,6 +5,9 @@ import "github.com/lemon-mint/lvm2/errs"
 const (
 	SYS_READ  = 0
 	SYS_WRITE = 1
+	SYS_OPEN  = 2
+	SYS_CLOSE = 3
+	SYS_EXIT  = 60
 )
 
 type SYSCALLFunc func(vm *VM, R0, R1, R2 uint64) (errno uint64, err error)

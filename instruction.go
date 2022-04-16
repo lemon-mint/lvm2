@@ -51,7 +51,7 @@ const (
 	InstructionType_CALL // SP = SP - WORD_SIZE; [SP] = PC; PC = R0
 	InstructionType_RET  // PC = [SP]; SP = SP + WORD_SIZE
 
-	InstructionType_SYSCALL // R0 = syscall(R1, R2)
+	InstructionType_SYSCALL // R0 = syscall(R1, R2) (System Call) R0: errno, R1: syscall number, R2: register parameter
 )
 
 func (v InstructionType) String() string {
