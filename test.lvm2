@@ -7,5 +7,5 @@ MOV $SYS33, #hw // DATA=hw
 MOV $SYS34, 13 // LEN=13
 SYSCALL $R0, 1, 0 // write
 
-MOV $SYS32, 0 // exit code 0
+MOV $SYS32, 0x00 // exit code 0
 SYSCALL $R0, 60, 0 // exit
