@@ -1,1 +1,5 @@
-package lvm2asm
+package main
+
+func main() {
+
+}
