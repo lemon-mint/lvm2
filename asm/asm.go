@@ -48,6 +48,20 @@ func INST(t lvm2.InstructionType, ops ...Operand) Code {
 	}
 }
 
+func LABEL(l string) Code {
+	return Code{
+		Type:  CODE_LABEL,
+		Label: l,
+	}
+}
+
+func DATA(b []byte) Code {
+	return Code{
+		Type: CODE_DATA,
+		Data: b,
+	}
+}
+
 func OPCONST(v uint64) Operand {
 	return Operand{
 		Type:  OperandType_ConstantValue,
