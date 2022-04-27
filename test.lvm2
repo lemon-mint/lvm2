@@ -1,17 +1,7 @@
-SECTION .text
-CHARS #hw "Hello, World!"
-
-SECTION .code
-MOV $SYS32, 1 // FD=1 (stdout)
-MOV $SYS33, #hw // DATA=hw
-MOV $SYS34, 13 // LEN=13
-SYSCALL $R0, 1, 0x00 // write
-JNE $R0, #error_exit
-
-LABEL #clean_exit
-MOV $SYS32, 0x00 // exit code 0
-SYSCALL $R0, 60, 0x00 // exit
-
-LABEL #error_exit
-MOV $SYS32, 0x01 // exit code 1
-SYSCALL $R0, 60, 0x00 // exit
+CHARS #hw "Hello, World!\n"
+MOV %SYS32, 1
+MOV %SYS33, #hw
+MOV %SYS34, 14
+SYSCALL %R0, 1, 0
+MOV %SYS32, %R0
+SYSCALL %R0, 60, 0
