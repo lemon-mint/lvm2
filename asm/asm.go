@@ -146,7 +146,6 @@ func NewEncoder() *Encoder {
 }
 
 func (e *Encoder) Encode(c Code) uint64 {
-	//fmt.Println(c)
 	switch c.Type {
 	case CODE_INST:
 		return e.encodeInstruction(c)
@@ -166,13 +165,13 @@ func (e *Encoder) encodeInstruction(c Code) (out uint64) {
 	for i, op := range c.Operands {
 		switch op.Type {
 		case OperandType_RegisterValue:
-			opt |= byte(lvm2.OpTypeRegister) << (i * 2)
+			opt |= byte(lvm2.OpTypeRegister) << (6 - i*2)
 			ops[i] = op.Value
 		case OperandType_ConstantValue:
-			opt |= byte(lvm2.OpTypeConstant) << (i * 2)
+			opt |= byte(lvm2.OpTypeConstant) << (6 - i*2)
 			ops[i] = op.Value
 		case OperandType_Label:
-			opt |= byte(lvm2.OpTypeConstant) << (i * 2)
+			opt |= byte(lvm2.OpTypeConstant) << (6 - i*2)
 			ops[i] = e.Labels[op.Value_Label]
 		}
 	}

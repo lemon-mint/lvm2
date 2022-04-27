@@ -120,6 +120,7 @@ func (m *Memory) LoadBlock(address uint64) (MemoryBlock, error) {
 }
 
 func (m *Memory) ReadAt(address uint64, p []byte) (int, error) {
+	var read int
 	for {
 		block, err := m.LoadBlock(address)
 		if err != nil {
@@ -128,16 +129,18 @@ func (m *Memory) ReadAt(address uint64, p []byte) (int, error) {
 
 		offset := address - block.Start
 		n := copy(p, block.Block[offset:])
+		read += n
 		p = p[n:]
 		address += uint64(n)
 
-		if len(p) == 0 {
-			return n, nil
+		if len(p) == 0 || n == 0 {
+			return read, nil
 		}
 	}
 }
 
 func (m *Memory) WriteAt(address uint64, p []byte) (int, error) {
+	var written int
 	for {
 		block, err := m.LoadBlock(address)
 		if err != nil {
@@ -146,11 +149,12 @@ func (m *Memory) WriteAt(address uint64, p []byte) (int, error) {
 
 		offset := address - block.Start
 		n := copy(block.Block[offset:], p)
+		written += n
 		p = p[n:]
 		address += uint64(n)
 
-		if len(p) == 0 {
-			return n, nil
+		if len(p) == 0 || n == 0 {
+			return written, nil
 		}
 	}
 }
