@@ -155,7 +155,7 @@ Opx Type:
 
 */
 
-const instructionBytecodeSize = 1 + 1 + 8*3
+const InstructionBytecodeSize = 1 + 1 + 8*3
 
 type OpType byte
 
@@ -176,12 +176,12 @@ func (v *VM) SetProgramCounter(pc uint64) {
 }
 
 func (v *VM) parseOpcode() (instructionType InstructionType, op0Type OpType, op1Type OpType, op2Type OpType, op0Value uint64, op1Value uint64, op2Value uint64, err error) {
-	var buffer [instructionBytecodeSize]byte
+	var buffer [InstructionBytecodeSize]byte
 	_, err = v.Memory.ReadAt(v.Registers[REGISTER_PC], buffer[:])
 	if err != nil {
 		return
 	}
-	v.Registers[REGISTER_PC] += instructionBytecodeSize
+	v.Registers[REGISTER_PC] += InstructionBytecodeSize
 
 	vs := InstructionOpcode(buffer[:])
 	instructionType = InstructionType(vs.InstructionType())
