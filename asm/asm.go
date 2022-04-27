@@ -146,18 +146,21 @@ func NewEncoder() *Encoder {
 }
 
 func (e *Encoder) Encode(c Code) uint64 {
+	//fmt.Println(c)
 	switch c.Type {
 	case CODE_INST:
-		e.encodeInstruction(c)
+		return e.encodeInstruction(c)
 	case CODE_DATA:
-		e.encodeData(c)
+		return e.encodeData(c)
 	case CODE_LABEL:
-		e.encodeLabel(c)
+		return e.encodeLabel(c)
 	}
 	return e.PC
 }
 
-func (e *Encoder) encodeInstruction(c Code) {
+func (e *Encoder) encodeInstruction(c Code) (out uint64) {
+	out = e.PC
+
 	var ops [3]uint64
 	var opt byte
 	for i, op := range c.Operands {
@@ -176,14 +179,17 @@ func (e *Encoder) encodeInstruction(c Code) {
 	opcode := lvm2.New_InstructionOpcode(uint8(c.Instruction), opt, ops[0], ops[1], ops[2])
 	e.Dst = append(e.Dst, opcode...)
 	e.PC += uint64(len(opcode))
+	return
 }
 
-func (e *Encoder) encodeData(c Code) {
+func (e *Encoder) encodeData(c Code) (out uint64) {
+	out = e.PC
 	e.Dst = append(e.Dst, c.Data...)
 	e.PC += uint64(len(c.Data))
+	return
 }
 
-func (e *Encoder) encodeLabel(c Code) {
+func (e *Encoder) encodeLabel(c Code) (out uint64) {
 	e.Labels[c.Label] = e.PC
 	e.Dst = append(e.Dst, lvm2.New_InstructionOpcode(
 		uint8(lvm2.InstructionType_NOP),
@@ -192,6 +198,7 @@ func (e *Encoder) encodeLabel(c Code) {
 		0,
 		0,
 	)...)
+	return e.PC
 }
 
 func (e *Encoder) Bytes() []byte {
