@@ -34,18 +34,31 @@ func _syscall_write(vm *VM, _, _, _ uint64) (errno uint64, err error) {
 		return errs.EINVALIDFD.Errno(), nil
 	}
 
-	var buffer []byte = make([]byte, n)
-	_, err = vm.Memory.ReadAt(p, buffer)
+	//var buffer []byte = make([]byte, n)
+	//_, err = vm.Memory.ReadAt(p, buffer)
+	//if err != nil {
+	//	return 1, err
+	//}
+
+	err = vm.Memory.GetMemoryFunc(p, n, func(_ uint64, b []byte) error {
+		written, err := file.Write(b)
+		if err != nil {
+			return err
+		}
+
+		vm.Registers[REGISTER_SYS35] += uint64(written)
+		return nil
+	})
 	if err != nil {
 		return 1, err
 	}
 
-	written, err := file.Write(buffer)
-	if err != nil {
-		return errs.EFILEWRITE.Errno(), nil
-	}
+	//written, err := file.Write(buffer)
+	//if err != nil {
+	//	return errs.EFILEWRITE.Errno(), nil
+	//}
 
-	vm.Registers[REGISTER_SYS35] = uint64(written)
+	//vm.Registers[REGISTER_SYS35] = uint64(written)
 	return 0, nil
 }
 

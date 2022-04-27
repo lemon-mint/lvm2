@@ -155,6 +155,36 @@ func (m *Memory) WriteAt(address uint64, p []byte) (int, error) {
 	}
 }
 
+func (m *Memory) GetMemoryFunc(address uint64, size uint64, iterf func(addr uint64, b []byte) error) error {
+	var r uint64 = size
+	for {
+		block, err := m.LoadBlock(address)
+		if err != nil {
+			return err
+		}
+
+		offset := address - block.Start
+		b := block.Block[offset:]
+		if r > uint64(len(b)) {
+			err = iterf(address, b)
+		} else {
+			b = b[:r]
+			err = iterf(address, b)
+		}
+
+		if err != nil {
+			return err
+		}
+
+		r -= uint64(len(b))
+		address += uint64(len(b))
+
+		if r == 0 {
+			return nil
+		}
+	}
+}
+
 func (m *Memory) SetProgram(p []byte) {
 	m.MemoryHead = uint64(len(p))
 	m.Blocks = append(m.Blocks, MemoryBlock{
