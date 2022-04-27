@@ -40,6 +40,35 @@ const (
 	OperandType_Label
 )
 
+func INST(t lvm2.InstructionType, ops ...Operand) Code {
+	return Code{
+		Type:        CODE_INST,
+		Instruction: t,
+		Operands:    ops,
+	}
+}
+
+func OPCONST(v uint64) Operand {
+	return Operand{
+		Type:  OperandType_ConstantValue,
+		Value: v,
+	}
+}
+
+func OPREG(r uint64) Operand {
+	return Operand{
+		Type:  OperandType_RegisterValue,
+		Value: uint64(r),
+	}
+}
+
+func OPLABEL(l string) Operand {
+	return Operand{
+		Type:        OperandType_Label,
+		Value_Label: l,
+	}
+}
+
 func (v Operand) String() string {
 	var sb strings.Builder
 	switch v.Type {
