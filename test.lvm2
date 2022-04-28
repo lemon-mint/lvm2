@@ -1,6 +1,7 @@
-CHARS #hw "Hello, World!\n"
+DATA @hw, "Hello, World!\n"
+
 MOV %SYS32, 1
-MOV %SYS33, #hw
+MOV %SYS33, @hw
 MOV %SYS34, 14
 SYSCALL %R0, 1, 0
 MOV %SYS32, %R0
