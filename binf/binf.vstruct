@@ -1,0 +1,15 @@
+enum EncodingType {
+    RAW,
+    GZIP
+}
+
+struct Header {
+    uint64 EntryPoint;
+}
+
+struct Program {
+    EncodingType Encoding;
+    bytes Code;
+
+    Header Header;
+}
