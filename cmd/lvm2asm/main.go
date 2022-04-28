@@ -10,6 +10,7 @@ import (
 	"github.com/alecthomas/participle/v2"
 	"github.com/lemon-mint/lvm2"
 	"github.com/lemon-mint/lvm2/asm"
+	"github.com/lemon-mint/lvm2/binf"
 )
 
 type Instruction struct {
@@ -72,6 +73,15 @@ func main() {
 	flags["__INPUT__"], err = filepath.Abs(flags["__INPUT__"])
 	if err != nil {
 		log.Fatalln("Failed to get absolute path of input file:", err)
+	}
+
+	if v, ok := flags["o"]; !ok || v == "" {
+		flags["o"] = filepath.Join(filepath.Dir(flags["__INPUT__"]), filepath.Base(flags["__INPUT__"])+".clvm2")
+	} else {
+		flags["o"], err = filepath.Abs(flags["o"])
+		if err != nil {
+			log.Fatalln("Failed to get absolute path of output file:", err)
+		}
 	}
 
 	f, err := os.Open(flags["__INPUT__"])
@@ -187,26 +197,44 @@ func main() {
 
 	//fmt.Println(e.Bytes())
 
-	vm := lvm2.VM{
-		Memory: lvm2.NewMemory(),
-		Files: map[uint64]lvm2.VMFile{
-			0: os.Stdin,
-			1: os.Stdout,
-			2: os.Stderr,
-		},
-		FileCounter: 3,
+	if pc, ok := variables["ENTRYPOINT"]; ok {
+		entryPoint = pc
 	}
-	vm.Memory.SetProgram(e.Bytes())
 
-	// Set Initial Stack Pointer
-	vm.Registers[lvm2.REGISTER_SP] = vm.Memory.MaxAddress
-	vm.Registers[lvm2.REGISTER_SB] = vm.Memory.MaxAddress
+	// vm := lvm2.VM{
+	// 	Memory: lvm2.NewMemory(),
+	// 	Files: map[uint64]lvm2.VMFile{
+	// 		0: os.Stdin,
+	// 		1: os.Stdout,
+	// 		2: os.Stderr,
+	// 	},
+	// 	FileCounter: 3,
+	// }
+	// vm.Memory.SetProgram(e.Bytes())
 
-	// Set Entry Point
-	vm.SetProgramCounter(entryPoint)
-	ret, err := vm.Run()
+	// // Set Initial Stack Pointer
+	// vm.Registers[lvm2.REGISTER_SP] = vm.Memory.MaxAddress
+	// vm.Registers[lvm2.REGISTER_SB] = vm.Memory.MaxAddress
+
+	// // Set Entry Point
+	// vm.SetProgramCounter(entryPoint)
+	// ret, err := vm.Run()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// os.Exit(int(ret))
+
+	prog := binf.New_Program(binf.EncodingType_RAW, binf.New_Header(0x01, entryPoint), e.Bytes())
+
+	of, err := os.Create(flags["o"])
 	if err != nil {
-		panic(err)
+		log.Fatalln("Failed to open output file:", err)
 	}
-	os.Exit(int(ret))
+	defer of.Close()
+
+	_, err = of.Write(prog)
+	if err != nil {
+		log.Fatalln("Failed to write output file:", err)
+	}
+
 }

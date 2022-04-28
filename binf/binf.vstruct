@@ -4,6 +4,7 @@ enum EncodingType {
 }
 
 struct Header {
+    uint8 version;
     uint64 EntryPoint;
 }
 
