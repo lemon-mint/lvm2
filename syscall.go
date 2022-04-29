@@ -2,6 +2,7 @@ package lvm2
 
 import (
 	"errors"
+	"os"
 
 	"github.com/lemon-mint/lvm2/errs"
 )
@@ -91,6 +92,64 @@ func _syscall_read(vm *VM, _, _, _ uint64) (errno uint64, err error) {
 	return 0, nil
 }
 
+func _syscall_open(vm *VM, _, _, _ uint64) (errno uint64, err error) {
+	// func Open(path string, flags uint64, mode uint64) (fd uintptr, errno uint64)
+	// SYS32[in]: path
+	// SYS33[in]: flags
+	// SYS34[in]: mode
+	// SYS35[out]: fd
+
+	path := vm.Registers[REGISTER_SYS32]
+	flags := vm.Registers[REGISTER_SYS33]
+	mode := vm.Registers[REGISTER_SYS34]
+
+	var filename []byte
+	err = vm.Memory.GetMemoryFunc(path, vm.Memory.MaxAddress-path, func(_ uint64, b []byte) error {
+		for _, c := range b {
+			if c == 0 {
+				return errBreak
+			}
+			filename = append(filename, c)
+		}
+		return nil
+	})
+	if err != nil && err != errBreak {
+		return 1, err
+	}
+
+	f, err := os.OpenFile(string(filename), int(flags), os.FileMode(mode))
+	if err != nil {
+		return 1, err
+	}
+
+	fd := vm.FileCounter
+	vm.FileCounter++
+	vm.Files[fd] = f
+	vm.Registers[REGISTER_SYS35] = fd
+
+	return 0, nil
+}
+
+func _syscall_close(vm *VM, _, _, _ uint64) (errno uint64, err error) {
+	// func Close(fd uintptr) (errno uint64)
+	// SYS32[in]: fd
+
+	fd := vm.Registers[REGISTER_SYS32]
+
+	file, ok := vm.Files[fd]
+	if !ok {
+		return errs.EINVALIDFD.Errno(), nil
+	}
+
+	err = file.Close()
+	if err != nil {
+		return 1, err
+	}
+
+	delete(vm.Files, fd)
+	return 0, nil
+}
+
 var errBreak = errors.New("break")
 
 func _syscall_exit(vm *VM, _, _, _ uint64) (errno uint64, err error) {
@@ -106,6 +165,8 @@ var ErrExited = errors.New("exited")
 var _ = func() bool {
 	syscall_Function_Table[SYS_WRITE] = _syscall_write
 	syscall_Function_Table[SYS_READ] = _syscall_read
+	syscall_Function_Table[SYS_OPEN] = _syscall_open
+	syscall_Function_Table[SYS_CLOSE] = _syscall_open
 	syscall_Function_Table[SYS_EXIT] = _syscall_exit
 	return true
 }()
