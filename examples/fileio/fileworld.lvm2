@@ -1,0 +1,44 @@
+DATA @path "hello.txt\x00"
+DATA @payload "Hello, File I/O\n"
+
+LABEL @ENTRYPOINT
+CALL @open
+CALL @write
+CALL @close
+JMP @exit
+
+LABEL @open
+// Open the file
+MOV %SYS32, @path
+MOV %SYS33, 578
+MOV %SYS34, 666
+SYSCALL %R0, 2, 0
+JNE %R0, @error
+MOV %R1, %SYS35
+RET
+
+LABEL @write
+// Write to the file
+MOV %SYS32, %R1 // Set FD
+MOV %SYS33, @payload
+MOV %SYS34, 16
+SYSCALL %R0, 1, 0
+JNE %R0, @error
+RET
+
+LABEL @close
+// Close the file
+MOV %SYS32, %R1 // Set FD
+SYSCALL %R0, 3, 0
+JNE %R0, @error
+RET
+
+LABEL @exit
+MOV %SYS32, 0
+SYSCALL %R0, 60, 0
+
+LABEL @error
+MOV %SYS32, 1
+SYSCALL %R0, 60, 0
+
+

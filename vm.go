@@ -274,6 +274,7 @@ func (v *VM) Run() (uint64, error) {
 		if err != nil {
 			return 1, err
 		}
+		//log.Println(instructionType, op0Type, op1Type, op2Type, op0Value, op1Value, op2Value, "pc:", v.Registers[REGISTER_PC])
 
 		if op0Type == OpTypeRegister {
 			if op0Value >= uint64(len(v.Registers)) {

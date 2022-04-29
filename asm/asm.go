@@ -190,13 +190,15 @@ func (e *Encoder) encodeData(c Code) (out uint64) {
 
 func (e *Encoder) encodeLabel(c Code) (out uint64) {
 	e.Labels[c.Label] = e.PC
-	e.Dst = append(e.Dst, lvm2.New_InstructionOpcode(
+	opcode := lvm2.New_InstructionOpcode(
 		uint8(lvm2.InstructionType_NOP),
 		0,
 		0,
 		0,
 		0,
-	)...)
+	)
+	e.Dst = append(e.Dst, opcode...)
+	e.PC += uint64(len(opcode))
 	return e.PC
 }
 

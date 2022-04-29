@@ -147,9 +147,8 @@ func main() {
 				if instr.Name == "DATA" || instr.Name == "LABEL" {
 					continue
 				}
-				if offset, ok := variables[*operand.Variable]; ok {
-					ops = append(ops, asm.OPCONST(offset))
-				}
+				offset := variables[*operand.Variable]
+				ops = append(ops, asm.OPCONST(offset))
 			}
 		}
 		//fmt.Printf("\n")
@@ -179,7 +178,6 @@ func main() {
 			}
 
 			varName := *instr.Operands[0].Variable
-			e.Encode(asm.INST(lvm2.InstructionType_NOP))
 			offset := e.Encode(asm.LABEL(varName))
 			variables[varName] = offset
 		default:
@@ -261,7 +259,6 @@ func main() {
 			}
 
 			varName := *instr.Operands[0].Variable
-			e.Encode(asm.INST(lvm2.InstructionType_NOP))
 			offset := e.Encode(asm.LABEL(varName))
 			variables[varName] = offset
 		default:

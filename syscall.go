@@ -116,10 +116,11 @@ func _syscall_open(vm *VM, _, _, _ uint64) (errno uint64, err error) {
 	if err != nil && err != errBreak {
 		return 1, err
 	}
+	//log.Println(string(filename), int(flags), os.FileMode(mode), err)
 
 	f, err := os.OpenFile(string(filename), int(flags), os.FileMode(mode))
 	if err != nil {
-		return 1, err
+		return 1, nil
 	}
 
 	fd := vm.FileCounter
@@ -166,7 +167,7 @@ var _ = func() bool {
 	syscall_Function_Table[SYS_WRITE] = _syscall_write
 	syscall_Function_Table[SYS_READ] = _syscall_read
 	syscall_Function_Table[SYS_OPEN] = _syscall_open
-	syscall_Function_Table[SYS_CLOSE] = _syscall_open
+	syscall_Function_Table[SYS_CLOSE] = _syscall_close
 	syscall_Function_Table[SYS_EXIT] = _syscall_exit
 	return true
 }()
