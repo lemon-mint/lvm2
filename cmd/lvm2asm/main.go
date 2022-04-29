@@ -149,6 +149,86 @@ func main() {
 				}
 				if offset, ok := variables[*operand.Variable]; ok {
 					ops = append(ops, asm.OPCONST(offset))
+				}
+			}
+		}
+		//fmt.Printf("\n")
+
+		switch instr.Name {
+		case "DATA":
+			if len(instr.Operands) != 2 {
+				log.Fatalln("DATA instruction must have exactly two operands")
+			}
+			if instr.Operands[0].Variable == nil {
+				log.Fatalln("DATA instruction's first operand must be a variable")
+			}
+			if instr.Operands[1].String == nil {
+				log.Fatalln("DATA instruction's second operand must be a string")
+			}
+
+			varName := *instr.Operands[0].Variable
+			data := []byte(*instr.Operands[1].String)
+			offset := e.Encode(asm.DATA(data))
+			variables[varName] = offset
+		case "LABEL":
+			if len(instr.Operands) != 1 {
+				log.Fatalln("LABEL instruction must have exactly one operand")
+			}
+			if instr.Operands[0].Variable == nil {
+				log.Fatalln("LABEL instruction's operand must be a variable")
+			}
+
+			varName := *instr.Operands[0].Variable
+			e.Encode(asm.INST(lvm2.InstructionType_NOP))
+			offset := e.Encode(asm.LABEL(varName))
+			variables[varName] = offset
+		default:
+			opcode, ok := lvm2.Instructions[instr.Name]
+			if !ok {
+				log.Fatalln("Invalid instruction:", instr.Name)
+			}
+			pc := e.Encode(asm.INST(opcode, ops...))
+			if entryPoint == 0 {
+				entryPoint = pc
+			}
+		}
+	}
+
+	e = asm.NewEncoder()
+
+	//repr.Println(file)
+
+	entryPoint = 0
+
+	for _, instr := range file.Instructions {
+		ops = ops[:0]
+		instr.Name = strings.ToUpper(instr.Name)
+		//fmt.Printf("%s", instr.Name)
+		for i, operand := range instr.Operands {
+			if operand.Register != nil {
+				//fmt.Printf(" %%%s", operand.Register.Name)
+				if id, ok := lvm2.Registers[operand.Register.Name]; ok {
+					if i > 0 {
+						ops = append(ops, asm.OPREG(id))
+					} else {
+						ops = append(ops, asm.OPCONST(id))
+					}
+				} else {
+					log.Fatalln("Unknown register:", operand.Register.Name)
+				}
+			} else if operand.Int != nil {
+				if operand.Sign {
+					*operand.Int = -*operand.Int
+				}
+				//fmt.Printf(" %d", *operand.Int)
+				ops = append(ops, asm.OPCONST(uint64(*operand.Int)))
+			} else if operand.Variable != nil {
+				//fmt.Printf(" @%s", *operand.Variable)
+				if instr.Name == "DATA" || instr.Name == "LABEL" {
+					continue
+				}
+				if offset, ok := variables[*operand.Variable]; ok {
+					ops = append(ops, asm.OPCONST(offset))
 				} else {
 					log.Fatalln("Undefined variable:", *operand.Variable)
 				}
@@ -181,6 +261,7 @@ func main() {
 			}
 
 			varName := *instr.Operands[0].Variable
+			e.Encode(asm.INST(lvm2.InstructionType_NOP))
 			offset := e.Encode(asm.LABEL(varName))
 			variables[varName] = offset
 		default:

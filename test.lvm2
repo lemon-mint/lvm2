@@ -1,8 +1,12 @@
 DATA @hw, "Hello, World!\n"
 
+LABEL @ENTRYPOINT
 MOV %SYS32, 1
 MOV %SYS33, @hw
 MOV %SYS34, 14
 SYSCALL %R0, 1, 0
+JMP @exit
+
+LABEL @exit
 MOV %SYS32, %R0
 SYSCALL %R0, 60, 0
