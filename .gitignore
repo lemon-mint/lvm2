@@ -17,3 +17,4 @@
 opcode_spec/
 
 dist/
+cache/
