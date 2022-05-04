@@ -13,6 +13,9 @@ const (
 	SYS_OPEN  = 2
 	SYS_CLOSE = 3
 	SYS_EXIT  = 60
+
+	SYS_ALLOCATE = 100
+	SYS_FREE     = 101
 )
 
 type SYSCALLFunc func(vm *VM, R0, R1, R2 uint64) (errno uint64, err error)
@@ -161,6 +164,27 @@ func _syscall_exit(vm *VM, _, _, _ uint64) (errno uint64, err error) {
 	return code, ErrExited
 }
 
+func _syscall_allocate(vm *VM, _, _, _ uint64) (errno uint64, err error) {
+	// func Allocate(size uint64) (errno uint64)
+	// SYS32[in]: size
+	// SYS33[out]: address
+
+	size := vm.Registers[REGISTER_SYS32]
+	address := vm.Memory.Allocate(size)
+
+	vm.Registers[REGISTER_SYS33] = address
+	return 0, nil
+}
+
+func _syscall_free(vm *VM, _, _, _ uint64) (errno uint64, err error) {
+	// func Free(address uint64) (errno uint64)
+	// SYS32[in]: address
+
+	address := vm.Registers[REGISTER_SYS32]
+	vm.Memory.Free(address)
+	return 0, nil
+}
+
 var ErrExited = errors.New("exited")
 
 var _ = func() bool {
@@ -169,5 +193,7 @@ var _ = func() bool {
 	syscall_Function_Table[SYS_OPEN] = _syscall_open
 	syscall_Function_Table[SYS_CLOSE] = _syscall_close
 	syscall_Function_Table[SYS_EXIT] = _syscall_exit
+	syscall_Function_Table[SYS_ALLOCATE] = _syscall_allocate
+	syscall_Function_Table[SYS_FREE] = _syscall_free
 	return true
 }()

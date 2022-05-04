@@ -1,5 +1,7 @@
 package lvm2
 
+import "errors"
+
 type MemoryBlock struct {
 	Start uint64
 	End   uint64
@@ -13,8 +15,9 @@ type Memory struct {
 	MemoryHead uint64
 	MaxAddress uint64
 
-	Stack MemoryBlock
-	Cache *MemoryBlock
+	Stack      MemoryBlock
+	Cache      *MemoryBlock
+	CacheIndex int
 }
 
 func NewMemory() *Memory {
@@ -34,89 +37,82 @@ func NewMemory() *Memory {
 
 const PAGE_SIZE = 1 << 12 // 4KB
 
-type StringError string
-
-func (s StringError) Error() string {
-	return string(s)
-}
-
-const (
-	ErrInvalidSize = StringError("Invalid Size")
-	ErrNoMemory    = StringError("No Memory")
+var (
+	ErrInvalidSize    = errors.New("Invalid Size")
+	ErrNoMemory       = errors.New("No Memory")
+	ErrInvalidAddress = errors.New("Invalid Address")
 )
 
-func (m *Memory) Allocate(size uint64) (uint64, error) {
+func (m *Memory) Allocate(size uint64) uint64 {
 	if size == 0 {
-		return 0, nil
+		return m.MemoryHead
 	}
 
-	if size%PAGE_SIZE != 0 {
-		return 0, ErrInvalidSize
-	}
+	var block MemoryBlock
+	block.Block = make([]byte, size)
+	block.Start = m.MemoryHead
+	block.End = block.Start + size
+	m.MemoryHead += size
+	m.Blocks = append(m.Blocks, block)
 
-	blockCount := size / PAGE_SIZE
-
-	// Flush Cache
-	m.Cache = nil
-
-	var start uint64 = m.MemoryHead
-
-	for i := 0; i < int(blockCount); i++ {
-		var block MemoryBlock
-		block.Start = m.MemoryHead
-		block.End = m.MemoryHead + PAGE_SIZE
-		m.MemoryHead += PAGE_SIZE
-		block.Block = make([]byte, PAGE_SIZE)
-
-		m.Blocks = append(m.Blocks, block)
-	}
-
-	return start, nil
+	return block.Start
 }
 
-func (m *Memory) Free(start uint64, size uint64) error {
-	if size == 0 {
-		return nil
+func (m *Memory) Free(start uint64) error {
+	_, index, err := m.LoadBlockIndex(start)
+	if err != nil {
+		return err
+	}
+	if index == -1 {
+		return ErrInvalidAddress
 	}
 
-	if size%PAGE_SIZE != 0 {
-		return ErrInvalidSize
-	}
-
-	blockCount := size / PAGE_SIZE
-
-	// Flush Cache
-	m.Cache = nil
-
-	for i := 0; i < int(blockCount); i++ {
-		m.Blocks = append(m.Blocks[:start], m.Blocks[start+1:]...)
-	}
-
+	m.Blocks = append(m.Blocks[:index], m.Blocks[index+1:]...)
 	return nil
 }
 
-const ErrSegmentationFault = StringError("Segmentation Fault")
+var ErrSegmentationFault = errors.New("Segmentation Fault")
 
 func (m *Memory) LoadBlock(address uint64) (MemoryBlock, error) {
+	block, _, err := m.LoadBlockIndex(address)
+	return block, err
+}
+
+func (m *Memory) LoadBlockIndex(address uint64) (MemoryBlock, int, error) {
 	// Check if we have a cache
 	if m.Cache != nil && m.Cache.Start <= address && m.Cache.End >= address {
-		return *m.Cache, nil
+		return *m.Cache, m.CacheIndex, nil
 	}
 
 	// Check if address is in stack
 	if address >= m.Stack.Start && address < m.Stack.End {
-		return m.Stack, nil
+		return m.Stack, -1, nil
 	}
 
-	// Check if address is in memory
-	for i := range m.Blocks {
-		if m.Blocks[i].Start <= address && m.Blocks[i].End >= address {
-			m.Cache = &m.Blocks[i]
-			return m.Blocks[i], nil
+	// Check if address is in memory (binary search)
+	low := 0
+	high := len(m.Blocks) - 1
+	// for i := range m.Blocks {
+	// 	if m.Blocks[i].Start <= address && m.Blocks[i].End >= address {
+	// 		m.Cache = &m.Blocks[i]
+	// 		m.CacheIndex = i
+	// 		return m.Blocks[i], i, nil
+	// 	}
+	// }
+	for low <= high {
+		mid := (low + high) / 2
+		if m.Blocks[mid].Start <= address && m.Blocks[mid].End >= address {
+			m.Cache = &m.Blocks[mid]
+			m.CacheIndex = mid
+			return m.Blocks[mid], mid, nil
+		} else if m.Blocks[mid].Start > address {
+			high = mid - 1
+		} else {
+			low = mid + 1
 		}
 	}
 
-	return MemoryBlock{}, ErrSegmentationFault
+	return MemoryBlock{}, -1, ErrSegmentationFault
 }
 
 func (m *Memory) ReadAt(address uint64, p []byte) (int, error) {
@@ -204,6 +200,7 @@ func (m *Memory) Reset() {
 	}
 	m.Blocks = m.Blocks[:0]
 	m.Cache = nil
+	m.CacheIndex = 0
 	m.MemoryHead = 0
 	for i := range m.Stack.Block {
 		m.Stack.Block[i] = 0
